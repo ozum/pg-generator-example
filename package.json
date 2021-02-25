@@ -51,7 +51,7 @@
     "js-base64": "^3.6.0",
     "lodash.merge": "^4.6.2",
     "nunjucks": "^3.2.3",
-    "pg-generator": "^5.0.0-alpha.2"
+    "pg-generator": "^5.0.0-alpha.3"
   },
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
