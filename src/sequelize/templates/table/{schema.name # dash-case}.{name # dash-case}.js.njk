@@ -1,0 +1,29 @@
+const { DataTypes } = require("sequelize");
+const sequelize = require({{ (x.sequelize or "../sequelize") | quote }})
+
+{# Decide whether to include schema name by reading `x.schema` boolean value from extra context. Apply `dboClassName` filter -#}
+module.exports = sequelize.define(
+  {{ o | dboClassName(x.schema) | quote }},
+  {
+    {#- Below is an example of partial usage -#}
+    {%- include "./partials/columns.njk" -%}
+  },
+  {
+    schema: {{ o.schema.name | quote }},
+    tableName: {{ o.name | quote }},
+    {%- if o.commentWithoutData %}
+    comment: {{ o.commentWithoutData | quote }},
+    {%- endif %}
+
+    {#- Add extra table details from extra context. #}
+    {%- for key, value in x.extra %}
+    {{ key }}: {{ value | stringify }},
+    {%- endfor %}
+  }
+);
+
+
+
+
+
+
