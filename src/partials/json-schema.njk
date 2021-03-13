@@ -1,0 +1,7 @@
+    type: "object",
+    required: {{ table | requiredColumns | listAttribute("name", { quote: "double", wrap: "[]" }) }},
+    properties: {
+      {%- for column in table.columns %}
+      {{ column.name }}: {{ jsonSchemaTypes[column.type.name] | stringify }},
+      {%- endfor %}
+    }

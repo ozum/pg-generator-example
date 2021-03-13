@@ -1,0 +1,39 @@
+{#- This template file is in partials directory, so it is not processed by pg-generator. #}
+{% for column in table.columns -%}
+  {#
+     Below example shows how to access the extra context provided by the context. See `public.product.attributes.price.default` in `context.ts` file.
+     `x` contains all extra context data and created by `pg-structure`.
+
+     `set` is a `nunjucks` feature which assign a value to a varibale. We assign an extra content of the column to a shorter variable for easy access.
+  #}
+  {% set xc = attributes[column.name] -%}
+
+  "{{ column.name }}": {
+    field: {{ column.name | camelCase | quote }},
+    {# Use `dboColumnTypeModifier` filter to add type length, precision and scale. -#}
+    type: DataTypes{{ sequelizeTypes[column.type.name] }}{{ column | dboColumnTypeModifier }},
+    allowNull: {{ not column.notNull }},
+
+    {%- if column.isPrimaryKey %}
+    primaryKey: "true",
+    {%- endif %}
+
+    {%- if column.uniqueIndexesNoPk[0].length > 0 %}
+    unique: {{ column.uniqueIndexesNoPk[0].name | quote  }},
+    {%- endif %}
+
+    {# Below is an example template variable usage. xc is a variable cretaed on top of this file. #}
+    {%- if (xc.default or (column.default | clearDefault)) %}
+    defaultValue: {{ xc.default or (column.default | clearDefault) }},
+    {%- endif %}
+
+    {%- if column.isSerial %}
+    autoIncrement: "true",
+    {%- endif %}
+
+    {%- if column.commentWithoutData %}
+    comment: {{ column.commentWithoutData | quote | singleLine  }},
+    {%- endif %}
+  },
+
+{% endfor %}

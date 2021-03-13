@@ -1,0 +1,15 @@
+{#-
+  This template's file name starts with "[table]", so it will be executed for each table and
+  `Table` object added to the context.
+
+  "o" and "table" are same. They are the "table" object, "x" is the extra context if available any.
+  This template creates "mermaid" sections in markdown file. "mermaid" is an extension
+  to markdown to create visual schemas using text. See: https://mermaid-js.github.io/mermaid/#/
+  See details of "table" here: https://www.pg-structure.com/nav.02.api/classes/table.html
+-#}
+
+{% include "objection-model-body.njk" %}
+  static jsonSchema = {
+{% include "json-schema.njk" %}
+  }
+}

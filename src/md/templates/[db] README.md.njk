@@ -1,0 +1,20 @@
+{#-
+  This template's file name starts with "[db]", so it will be executed only once and `Db` object added to the context.
+  "o" and "db" are same. They are the "db" object, "x" is the extra context if available any.
+  See details of "db" here: https://www.pg-structure.com/nav.02.api/classes/db.html
+-#}
+
+# {{ db.name | titleCase }} Tables
+
+{#-
+  We loop through all tables of the database. "tables" is a property of "db" object.
+  See: https://www.pg-structure.com/nav.02.api/classes/db.html#tables
+#}
+
+{% for table in db.tables %}
+
+{#- We create links to table markdown files using "[Title](link)" syntax of markdown. #}
+**[{{ table.name | titleCase }}]({{ table.schema.name | dashCase }}.{{ table.name | dashCase }}.md)**
+{{ table.comment }}
+
+{% endfor %}

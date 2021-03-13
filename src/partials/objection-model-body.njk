@@ -1,0 +1,46 @@
+/* eslint-disable require-jsdoc, max-len, global-require */
+import { join } from "path";
+import { Model } from "{{ baseModel or library }}";
+{% if library === "schwifty" %}import Joi from "joi";{% endif %}
+
+{% include "jsdoc.njk" -%}
+export class {{ table | dboClassName(addSchemaName) }} extends Model {
+  static tableName = {{ table.name | quote }};
+  static idColumn = {{ table.primaryKey.columns | listAttribute("name", { quote: "double", wrap: "[]" }) }};
+  static relationMappings = {
+    {% for relation in table.o2mRelations -%}
+    {{ relation.name }}: {
+      relation: Model.HasManyRelation,
+      modelClass: join(__dirname, "{{ relation.targetTable.schema.name | dashCase }}.{{ relation.targetTable.name | dashCase }}"),
+      join: {
+        from: {{ relation.foreignKey.referencedColumns | listAttribute("parentalName", { quote: "double", wrap: "[]" }) }},
+        to: {{ relation.foreignKey.columns | listAttribute("parentalName", { quote: "double", wrap: "[]" }) }},
+      }
+    },
+    {%- endfor %}
+    {% for relation in table.m2oRelations -%}
+    {{ relation.name }}: {
+      relation: Model.BelongsToOneRelation,
+      modelClass: join(__dirname, "{{ relation.targetTable.schema.name | dashCase }}.{{ relation.targetTable.name | dashCase }}"),
+      join: {
+        from: {{ relation.foreignKey.columns | listAttribute("parentalName", { quote: "double", wrap: "[]" }) }},
+        to: {{ relation.foreignKey.referencedColumns | listAttribute("parentalName", { quote: "double", wrap: "[]" }) }},
+      }
+    },
+    {%- endfor %}
+    {% for relation in table.m2mRelations -%}
+    {{ relation.name }}: {
+      relation: Model.ManyToManyRelation,
+      modelClass: join(__dirname, "{{ relation.targetTable.schema.name | dashCase }}.{{ relation.targetTable.name | dashCase }}"),
+      join: {
+        from: {{ relation.foreignKey.referencedColumns | listAttribute("parentalName", { quote: "double", wrap: "[]" }) }},
+        through: {
+          modelClass: join(__dirname, "{{ relation.joinTable.schema.name | dashCase }}.{{ relation.joinTable.name | dashCase }}"),
+          from: {{ relation.foreignKey.columns | listAttribute("parentalName", { quote: "double", wrap: "[]" }) }},
+          to: {{ relation.targetForeignKey.columns | listAttribute("parentalName", { quote: "double", wrap: "[]" }) }},
+        },
+        to: {{ relation.targetForeignKey.referencedColumns | listAttribute("parentalName", { quote: "double", wrap: "[]" }) }},
+      }
+    },
+    {%- endfor %}
+  }

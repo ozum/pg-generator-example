@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import { PgGenerator, Context, converters } from "pg-generator";
+import { PgGenerator, Context } from "pg-generator";
 import { getNunjucks } from "../utils/get-nunjucks";
 import generatorContext from "./context";
 
@@ -8,7 +8,7 @@ const nunjucks = getNunjucks(__dirname);
 /**
  * Example `pg-generator` generator which creates sequelize models.
  */
-export default class Md extends PgGenerator {
+export default class Sequelize6 extends PgGenerator {
   /**
    * Returns a context data including sequelize data types
    * and some other examples.
@@ -22,10 +22,6 @@ export default class Md extends PgGenerator {
    * `pg-generator` is template engine agnostic.
    */
   protected async render(templatePath: string, context: Context): Promise<string> {
-    const md = nunjucks.render(templatePath, context);
-
-    // Convert schemas into SVG graphics using `mermaid` (https://mermaid-js.github.io/mermaid/#/)
-    // "pg-generator" exports some converters.
-    return converters.mermaidToSVG(md);
+    return nunjucks.render(templatePath, context);
   }
 }

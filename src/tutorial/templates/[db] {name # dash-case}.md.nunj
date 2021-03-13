@@ -1,0 +1,54 @@
+{#-
+  This template's file name starts with "[db]", so it will be executed only once and `Db` object added to the context.
+  "o" and "db" are same. They are the "db" object, "x" is the extra context if available any.
+  See details of "db" here: https://www.pg-structure.com/nav.02.api/classes/db.html
+-#}
+
+# Abstract
+
+* This is a nunjucks template file (see https://mozilla.github.io/nunjucks/).
+* This file is executed once, because it's file name starts with "[db]".
+* File name is also a template.
+  * { name } is replaced with database name.
+  * Any attributes of [Db](https://www.pg-structure.com/nav.02.api/classes/db) from [pg-structure](https://www.pg-structure.com/) can be used.
+  * Filter functions from [pg-generator](https://www.pg-generator.com) can be used with `#` sign.
+* Passed context variables:
+  |Variable|Object|Details|
+  |---|---|---|
+  |`db`|[Db](https://www.pg-structure.com/nav.02.api/classes/db)|File is in "db" directory.|
+  |`o`|[Db](https://www.pg-structure.com/nav.02.api/classes/db)|File is in "db" directory.|
+  |`x`|Extra context|Merged data from context from generator and context file from user.|
+
+Below title comes from `global.message` of "tutorial/context.ts"
+
+# {{ message }}
+
+# Content from Data
+
+## Schemas
+
+Below we loop through all [schemas](https://www.pg-structure.com/nav.02.api/classes/schema) of "{{ db.name }}" database.
+
+{% for schema in db.schemas.array %}
+    "{{ db.name }}" has "{{ schema.name }}" schema.
+{% endfor %}
+
+## Tables
+
+Also it is possible to iterate all [tables](https://www.pg-structure.com/nav.02.api/classes/table) via nested loops. We can also loop using `db.tables` to avoid nested loops.
+
+{% for schema in db.schemas %}
+    {% for table in schema.tables -%}
+    {{ table.fullName }}
+    {% endfor %}
+{% endfor %}
+
+## Filters
+
+Filters are modifiers for template strings. For example below is a list of all table names in camel-case:
+
+{% for schema in db.schemas %}
+    {% for table in schema.tables -%}
+        {{ table.fullName | camelCase }}
+    {% endfor %}
+{% endfor %}

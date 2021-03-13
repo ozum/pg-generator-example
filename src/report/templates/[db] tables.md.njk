@@ -1,0 +1,16 @@
+{#-
+  This template's file name starts with "[db]", so it will be executed only once and `Db` object added to the context.
+  "o" and "db" are same. They are the "db" object, "x" is the extra context if available any.
+  See details of "db" here: https://www.pg-structure.com/nav.02.api/classes/db.html
+-#}
+
+{% for table in db.tables %}
+# {{ table.fullName }}
+
+|Type|Relation Name|Target Schema|Target Table|
+|---|---|---|---|
+{%- for relation in table.relations %}
+|{{ relation.type }}|{{ relation.name }}|{{ relation.targetTable.schema.name }}|{{ relation.targetTable.name }}|
+{%- endfor %}
+
+{%- endfor %}

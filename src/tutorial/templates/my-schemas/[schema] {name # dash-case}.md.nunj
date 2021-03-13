@@ -1,0 +1,31 @@
+{#-
+  This template's file name starts with "[schema]", so it will be executed for each schema and
+  `Schema` object added to the context.
+
+  "o" and "table" are same. They are the "table" object, "x" is the extra context if available any.
+  This template creates "mermaid" sections in markdown file. "mermaid" is an extension
+  to markdown to create visual schemas using text. See: https://mermaid-js.github.io/mermaid/#/
+  See details of "table" here: https://www.pg-structure.com/nav.02.api/classes/table.html
+-#}
+
+# Abstract
+
+* This is a nunjucks template file (see https://mozilla.github.io/nunjucks/).
+* This file is executed for each database schema, because it's file name starts with "[schema]".
+* File is generated in "my-schemas" sub-directory, because it is in "my-schemas".
+* File name is also a template.
+  * { name } is replaced with schema name.
+  * Any attributes of [Schema](https://www.pg-structure.com/nav.02.api/classes/schema) from [pg-structure](https://www.pg-structure.com/) can be used.
+  * Filter functions from [pg-generator](https://www.pg-generator.com) can be used with `#` sign.
+* Passed context variables:
+  |Variable|Object|Details|
+  |---|---|---|
+  |`schema`|[Schema](https://www.pg-structure.com/nav.02.api/classes/schema)|File is in "schema" directory.|
+  |`o`|[Schema](https://www.pg-structure.com/nav.02.api/classes/schema)|File is in "schema" directory.|
+  |`x`|Extra context|Merged data from context from generator and context file from user.|
+
+For example, this schema is generated for "{{ schema.name }}" of "{{ schema.db.name }}" database.
+
+Below is messages from extra context. It comes from `global.message` of "tutorial/context.ts" file. It could be overridden by user provided context file.
+
+# {{ message }}
