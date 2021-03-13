@@ -1,0 +1,18 @@
+/**
+{{ table.comment | wordWrap(137) | linePrefix(" * ") }}
+ *
+{%- for column in table.columns %}
+ * @property {{ (jsTypes[column.type.name] + ("[]".repeat(column.arrayDimension))) | wrap | fill(30) }} {{ ((column.name | camelCase) + ("=" + column.default if column.default !== null) | maxLength(30)) | wrapIf(not column.notNull, "[]") }} - {{ column.comment | maxLength(180) }}
+{%- endfor %}
+
+
+{%- for relation in table.m2oRelations %}
+ * @property {{ relation.targetTable | dboClassName(addSchemaName) | wrap | fill(30)}} {{ relation.name | camelCase}} - {{ relation.foreignKey.comment }}
+{%- endfor %}
+{%- for relation in table.o2mRelations %}
+ * @property {{ (relation.targetTable | dboClassName(addSchemaName) + "[]") | wrap | fill(30)}} {{ relation.name | camelCase}} - (O2M) {{ relation.foreignKey.columns | listAttribute }} {{ relation.targetTable.name | plural | human(true) }}.
+{%- endfor %}
+{%- for relation in table.m2mRelations %}
+ * @property {{ (relation.targetTable | dboClassName(addSchemaName) + "[]") | wrap | fill(30)}} {{ relation.name | camelCase}} - (M2M) {{ relation.foreignKey.columns | listAttribute }} {{ relation.targetTable.name | plural | human(true) }} for {{ relation.targetForeignKey.columns | listAttribute }}.
+{%- endfor %}
+ */

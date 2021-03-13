@@ -1,0 +1,12 @@
+{#-
+  This template's file name starts with "[db]", so it will be executed only once and `Db` object added to the context.
+  "o" and "db" are same. They are the "db" object, "x" is the extra context if available any.
+  See details of "db" here: https://www.pg-structure.com/nav.02.api/classes/db.html
+
+  Decide whether to include schema name by reading `addSchemaName` boolean value from extra context.
+  `dboClassName` filter provided by "pg-generator". See "src/get-nunjucks" for an example.
+-#}
+{% for table in db.tables -%}
+  export {{ table | dboClassName(addSchemaName) }} from "./definition/{{ table | dboClassName(addSchemaName) | dashCase }}";
+{% endfor -%}
+

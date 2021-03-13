@@ -1,0 +1,42 @@
+{#-
+  This template's file name starts with "[table]", so it will be executed for each table and
+  `Table` object added to the context.
+
+  "o" and "table" are same. They are the "table" object, "x" is the extra context if available any.
+  This template creates "mermaid" sections in markdown file. "mermaid" is an extension
+  to markdown to create visual schemas using text. See: https://mermaid-js.github.io/mermaid/#/
+  See details of "table" here: https://www.pg-structure.com/nav.02.api/classes/table.html
+-#}
+
+# Abstract
+
+* This is a nunjucks template file (see https://mozilla.github.io/nunjucks/).
+* This file is executed for each database table, because it's file name starts with "[table]".
+* File is generated in "my-schemas/[schema name]" sub-directory, because it is in sub directory with a template which generates schema name.
+* File path is also a template.
+  * { schema.name } is replaced with schema name. `schema` is a property of `table` object.
+  * { name } is replaced with table name.
+  * Any attributes of [Table](https://www.pg-structure.com/nav.02.api/classes/table) from [pg-structure](https://www.pg-structure.com/) can be used.
+  * Filter functions from [pg-generator](https://www.pg-generator.com) can be used with `#` sign.
+* Passed context variables:
+  |Variable|Object|Details|
+  |---|---|---|
+  |`table`|[Schema](https://www.pg-structure.com/nav.02.api/classes/table)|File is in "table" directory.|
+  |`o`|[Schema](https://www.pg-structure.com/nav.02.api/classes/table)|File is in "table" directory.|
+  |`x`|Extra context|Merged data from context from generator and context file from user.|
+
+Below is messages from extra context. For all tables it comes from `global.typeGlobal.table.message`, if table is `public.product` it comes from `tables["public.product"].message` of "tutorial/context.ts" file. `global.message` is overridden by more specific attributes. It could be further overridden by user provided context file.
+
+# {{ message }}
+
+Below is an example of a loop for listing all columns of the table.
+
+Please note the use of `dboColumnTypeModifier` filter, which is provided by `pg-generator` for templates. For details see filters of `pg-generator`.
+
+# {{ table.fullName }}
+
+|Column|Type|
+|---|---|
+{%- for column in table.columns %}
+|{{ column.name }}|{{ column.type.name }}{{ column | dboColumnTypeModifier }}|
+{%- endfor %}

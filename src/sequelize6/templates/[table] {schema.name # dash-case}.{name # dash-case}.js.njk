@@ -1,0 +1,43 @@
+{#-
+  This template's file name starts with "[table]", so it will be executed for each table and
+  `Table` object added to the context.
+
+  "o" and "table" are same. They are the "table" object, "x" is the extra context if available any.
+  This template creates "mermaid" sections in markdown file. "mermaid" is an extension
+  to markdown to create visual schemas using text. See: https://mermaid-js.github.io/mermaid/#/
+  See details of "table" here: https://www.pg-structure.com/nav.02.api/classes/table.html
+-#}
+
+import { DataTypes } from "sequelize";
+import sequelize from "{{ (sequelize or "../sequelize") }}"; // Provide your own sequelize instance.
+
+{#
+  Decide whether to include schema name by reading `addSchemaName` boolean value from extra context.
+  Apply `dboClassName` filter provided by "pg-generator". See "src/get-nunjucks" for an example
+  of adding all filters provided by "pg-generator" to nunjucks templating engine.
+-#}
+export default sequelize.define(
+  {{ table | dboClassName(addSchemaName) | quote }},
+  {
+    {#- Below is an example of partial usage of nunjucks templating engine. -#}
+    {%- include "./partials/columns.njk" -%}
+  },
+  {
+    schema: {{ table.schema.name | quote }},
+    tableName: {{ table.name | quote }},
+    {%- if table.commentWithoutData %}
+    comment: {{ table.commentWithoutData | quote }},
+    {%- endif %}
+
+    {#- Add extra table details from extra context. #}
+    {%- for key, value in extra %}
+    {{ key }}: {{ value | stringify }},
+    {%- endfor %}
+  }
+);
+
+
+
+
+
+

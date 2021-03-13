@@ -1,0 +1,99 @@
+{#-
+  This template's file name starts with "[table]", so it will be executed for each table and
+  `Table` object added to the context.
+
+  "o" and "table" are same. They are the "table" object, "x" is the extra context if available any.
+  This template creates "mermaid" sections in markdown file. "mermaid" is an extension
+  to markdown to create visual schemas using text. See: https://mermaid-js.github.io/mermaid/#/
+  See details of "table" here: https://www.pg-structure.com/nav.02.api/classes/table.html
+
+  Here is an example of macro usge in nunjucks template for `pg-generator`.
+  A macro is a nunjucks feature. It is similar to a function, which may be
+  called many times. This macro creates a class diagram for mermaid
+-#}
+
+{% macro classDiagram(table) %}
+  class {{ table | dboClassName(addSchemaName) }} {
+    {%- for column in table.columns %}
+    {{ diagramTypes[column.type.name] }} +{{ column.name }}
+    {%- endfor %}
+    {%- for relation in table.o2mRelations %}
+    {{ relation.targetTable | dboClassName(addSchemaName) }}[] +{{ relation.name }}
+    {%- endfor %}
+    {%- for relation in table.m2oRelations %}
+    {{ relation.targetTable | dboClassName(addSchemaName) }} +{{ relation.name }}
+    {%- endfor %}
+    {%- for relation in table.m2mRelations %}
+    {{ relation.targetTable | dboClassName(addSchemaName) }}[] +{{ relation.name }}
+    {%- endfor %}
+  }
+{% endmacro %}
+
+# Table: {{ table.fullName }}
+
+{{ table.comment }}
+
+## Database Structure
+
+{{ table.comment }}
+
+{#
+  We create a markdown table looping through columns of the table.
+  See: https://www.pg-structure.com/nav.02.api/classes/table.html#columns
+#}
+
+|PK|FK|Name|Type|NN|Index|
+|:-:|:-:|---|---|:-:|:-:|
+{%- for column in table.columns %}
+|{{ "🔑" if column.isPrimaryKey }}|{{ "FK" if column.isForeignKey }}|{{column.name}}|{{column.type.name}}{{ column | dboColumnTypeModifier }}|{{ "●" if column.notNull else "○" }}|{{ column.indexes.length if column.indexes.length > 0 }}|
+{%- endfor %}
+
+### One to Many & Many to One Relations
+
+{#
+  We loop through "one to many", "many to one"  and "many to many" relations of teh table to create mermaid ER diagrams.
+  See:
+  https://www.pg-structure.com/nav.02.api/classes/table.html#o2mrelations
+  https://www.pg-structure.com/nav.02.api/classes/table.html#m2orelations
+  https://www.pg-structure.com/nav.02.api/classes/table.html#m2mrelations
+#}
+
+```mermaid
+erDiagram
+  {%- for relation in table.o2mRelations %}
+  {{ table.schema.name }}_{{ table.name }} ||--o{ {{ relation.targetTable.schema.name }}_{{ relation.targetTable.name }} : {{ relation.foreignKey.name }}
+  {{ table.schema.name }}_{{ table.name }}
+  {%- endfor %}
+  {%- for relation in table.m2oRelations %}
+  {{ table.schema.name }}_{{ table.name }} }o--|| {{ relation.targetTable.schema.name }}_{{ relation.targetTable.name }} : {{ relation.foreignKey.name }}
+  {%- endfor %}
+```
+
+### Many to Many Relations
+
+```mermaid
+erDiagram
+  {%- for relation in table.m2mRelations %}
+  {{ table.schema.name }}_{{ table.name }} }o--o{ {{ relation.targetTable.schema.name }}_{{ relation.targetTable.name }} : {{ relation.name }}
+  {%- endfor %}
+```
+
+{#
+  We document an hypothetical ORM Class using a basic UML diagram. Most probably we create ORM models
+  using "pg-generator" totable. It may be helpful to use this example and modify it according to our needs.
+#}
+
+### Class Diagram
+```mermaid
+classDiagram
+  {#-
+    We cerated the "classDiagram" macro earlier on top of this file. We will use it several times below.
+    We pass "table" object to the macrtable.
+  #}
+  {{ classDiagram(o) }}
+  {%- for relation in table.relations %}
+  {{ classDiagram(relation.targetTable) }}
+  {{ o | dboClassName(addSchemaName) }} --> {{ relation.targetTable | dboClassName(addSchemaName) }} : {{ relation.name }}
+  {%- endfor %}
+```
+

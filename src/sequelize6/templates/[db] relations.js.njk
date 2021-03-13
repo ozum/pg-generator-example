@@ -1,0 +1,65 @@
+{#-
+  This nunjucks template file name starts with "[db]", so it is executed only once.
+  "o" and "db" are same. They are the "db" object, "x" is the extra context if available any.
+  See details of "db" here: https://www.pg-structure.com/nav.02.api/classes/db.html
+-#}
+
+{%- for table in db.tables %}
+{%- if table.relations.length > 0 %}
+{# Decide whether to include schema name by reading `addSchemaName` boolean value from extra context. Apply `dboClassName` filter -#}
+import {{ table | dboClassName(addSchemaName) }} from "./{{ table.schema.name | dashCase }}-{{ table.name | dashCase }}";
+{%- endif %}
+{%- endfor %}
+
+
+/**
+ * Builds all relations between models. It is provided as a function to prevent circular references during require.
+ */
+export default function buildRelations() {
+  {#-
+    `pg-generator` supports composite key generation. However, as of this example is created,
+    sequelize does not support composite keys. For sequlize, we assume foreign keys are not composite keys.
+    See: https://github.com/sequelize/sequelize/issues/311
+
+    We loop through tables of "db". See: https://www.pg-structure.com/nav.02.api/classes/db.html#tables
+  #}
+  {%- for table in db.tables %}
+
+  {#- Loop through "one to many" relations of the table. See: https://www.pg-structure.com/nav.02.api/classes/table.html#o2mrelations #}
+  {%- for relation in table.o2mRelations %}
+
+  {#- "dboClassName" is a helper filter provided by "pg-generator" to create class names from db object names. #}
+  {{ table | dboClassName(addSchemaName) }}.hasMany({{ relation.targetTable | dboClassName(addSchemaName) }}, {
+    foreignKey: {{ relation.foreignKey.columns[0].name | quote }},
+    sourceKey: {{ relation.foreignKey.referencedColumns[0].name | quote }},
+    as: {{ relation.name | quote }},
+    onDelete: {{ relation.foreignKey.onDelete | quote }},
+    onUpdate: {{ relation.foreignKey.onUpdate | quote }},
+  });
+  {%- endfor %}
+
+  {#- Loop through "many to one" relations of the table. See: https://www.pg-structure.com/nav.02.api/classes/table.html#m2orelations #}
+  {%- for relation in table.m2oRelations %}
+
+  {{ table | dboClassName(addSchemaName) }}.belongsTo({{ relation.targetTable | dboClassName(addSchemaName) }}, {
+    foreignKey: {{ relation.foreignKey.columns[0].name | quote }},
+    targetKey: {{ relation.foreignKey.referencedColumns[0].name | quote }},
+    as: {{ relation.name | quote }},
+    onDelete: {{ relation.foreignKey.onDelete | quote }},
+    onUpdate: {{ relation.foreignKey.onUpdate | quote }},
+  });
+  {%- endfor %}
+
+  {#- Loop through "many to many" relations of the table. See: https://www.pg-structure.com/nav.02.api/classes/table.html#m2mrelations #}
+  {%- for relation in table.m2mRelations %}
+
+  {{ table | dboClassName(addSchemaName) }}.belongsToMany({{ relation.targetTable | dboClassName(addSchemaName) }}, {
+    through: {{ relation.joinTable | dboClassName(addSchemaName) | quote }},
+    otherKey: {{ relation.foreignKey.columns[0].name | quote }},
+    sourceKey: {{ relation.foreignKey.referencedColumns[0].name | quote }},
+    targetKey: {{ relation.targetForeignKey.referencedColumns[0].name | quote }},
+    as: {{ relation.name | quote }},
+  });
+  {%- endfor %}
+  {%- endfor %}
+}
