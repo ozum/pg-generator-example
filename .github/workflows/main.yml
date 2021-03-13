@@ -19,6 +19,12 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
       - name: Begin CI...
         uses: actions/checkout@v2
+      - name: Set environment variables from file.
+        shell: bash
+        run: |-
+          while read line; do
+            echo "$line" >> $GITHUB_ENV
+          done < .github/workflows/github.env
       - name: Use Node 14
         uses: actions/setup-node@v2
         with:
